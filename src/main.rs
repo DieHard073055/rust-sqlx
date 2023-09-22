@@ -2,7 +2,7 @@ mod db;
 
 use db::connection::connect;
 use db::models::Contact;
-use db::operations::{create_contact, read_contact, list_all_contacts};
+use db::operations::{create_contact, read_contact, list_all_contacts, bulk_create_contacts};
 
 async fn run_migrations(pool: &sqlx::PgPool) -> Result <(), Box<dyn std::error::Error>>{
     sqlx::migrate!("./migrations").run(pool).await?;
@@ -12,34 +12,41 @@ async fn run_migrations(pool: &sqlx::PgPool) -> Result <(), Box<dyn std::error::
 async fn add_dummy_data(pool: &sqlx::PgPool) -> Result<(), Box<dyn std::error::Error>> {
     let contacts = vec![
         Contact {
-            contact_id: 1,
-            name: "John Doe".to_string(),
-            phone_number: Some("123-456-7890".to_string()),
-            email: Some("johndoe@example.com".to_string()),
-            address: Some("123 Elm St, Springfield".to_string()),
-            birthday: Some("1990-01-01".to_string())
+            contact_id: 4,
+            name: "Alice Williams".to_string(),
+            phone_number: Some("456-789-0123".to_string()),
+            email: Some("alice@example.com".to_string()),
+            address: Some("123 Birch Rd, Mountaintop".to_string()),
+            birthday: Some("1992-02-12".to_string())
         },
         Contact {
-            contact_id: 2,
-            name: "Jane Smith".to_string(),
-            phone_number: Some("234-567-8901".to_string()),
-            email: Some("janesmith@example.com".to_string()),
-            address: Some("456 Maple Ave, Rivertown".to_string()),
-            birthday: Some("1985-05-05".to_string())
+            contact_id: 5,
+            name: "David Brown".to_string(),
+            phone_number: Some("567-890-1234".to_string()),
+            email: Some("davidb@example.com".to_string()),
+            address: Some("456 Pine Drive, Seaside".to_string()),
+            birthday: Some("1988-03-03".to_string())
         },
         Contact {
-            contact_id: 3,
-            name: "Robert Johnson".to_string(),
-            phone_number: Some("345-678-9012".to_string()),
-            email: Some("robertj@example.com".to_string()),
-            address: Some("789 Oak Lane, Hillside".to_string()),
-            birthday: Some("1980-10-10".to_string())
+            contact_id: 6,
+            name: "Eva Martinez".to_string(),
+            phone_number: Some("678-901-2345".to_string()),
+            email: Some("eva@example.com".to_string()),
+            address: Some("789 Cedar Blvd, Plainsville".to_string()),
+            birthday: Some("1995-07-17".to_string())
         },
+        Contact {
+            contact_id: 7,
+            name: "Tom Anderson".to_string(),
+            phone_number: Some("789-012-3456".to_string()),
+            email: Some("tom@example.com".to_string()),
+            address: Some("123 Fir St, Foresttown".to_string()),
+            birthday: Some("1986-12-31".to_string())
+        }
     ];
 
-    for contact in contacts {
-        create_contact(pool, &contact).await?;
-    }
+    bulk_create_contacts(pool, contacts).await?;
+
     Ok(())
 }
 
@@ -48,6 +55,9 @@ async fn main() -> Result <(), Box<dyn std::error::Error>>{
 
     let pool = connect().await?;
     run_migrations(&pool).await?;
+
+    // Run the bulk create function
+    add_dummy_data(&pool).await?;
 
     let contacts =  list_all_contacts(&pool).await?; // = read_contact(&pool, 0).await?;
     for contact in contacts {
